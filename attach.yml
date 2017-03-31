@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+  - name: install open-iscsi
+    apt:
+      name: open-iscsi
+      state: present
+
+  - name: /etc/iscsi/iscsid.conf
+    template:
+      src: iscsid.conf.j2
+      dest: /etc/iscsi/iscsid.conf
+      mode: 0600
+    notify: restart iscsi
+
+  handlers:
+  - name: restart iscsi
+    service:
+      name: iscsi
+      state: restarted
+
+- hosts: all
+  tasks:
+  - name: connect to the named target
+    open_iscsi:
+      discover: True
+      auto_node_startup: True
+      login: True
+      target: "{{ iqn }}"
+      portal: "{{ portal }}"
